@@ -1,55 +1,79 @@
-import os
-import json
 import joblib
+import json
 import numpy as np
-import cv2
 import base64
-from wavelets import w2d  # make sure this file is present
+import cv2
+import os
+from wavelets import w2d   # keep your own import
 
-# Paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ARTIFACTS_DIR = os.path.join(BASE_DIR, "artifacts")
+artifacts_dir = os.path.join(BASE_DIR, "artifacts")
+b64_file = os.path.join(BASE_DIR, "b64.txt")
+test_image_file = os.path.join(BASE_DIR, "test.webp")
 
-# Global variables
 __class_name_to_number = {}
 __class_number_to_name = {}
+
 __model = None
 
-# ------------------------------
-# Load saved artifacts
-# ------------------------------
-def load_saved_artifacts():
-    global __class_name_to_number, __class_number_to_name, __model
+def classify_image(image_base64_data, file_path=None):
+    imgs = get_cropped_image_if_2_eyes(file_path, image_base64_data)
+    result = []
 
-    print("Loading saved artifacts...")
-    with open(os.path.join(ARTIFACTS_DIR, "class_dictionary.json"), "r") as f:
-        __class_name_to_number = json.load(f)
-        __class_number_to_name = {v: k for k, v in __class_name_to_number.items()}
+    for img in imgs:
+        scalled_raw_img = cv2.resize(img, (32, 32))
+        img_har = w2d(img, 'db1', 5)
+        scalled_img_har = cv2.resize(img_har, (32, 32))
+        
+        combined_img = np.vstack((
+            scalled_raw_img.reshape(32 * 32 * 3, 1),
+            scalled_img_har.reshape(32 * 32, 1)
+        ))
 
-    if __model is None:
-        __model = joblib.load(os.path.join(ARTIFACTS_DIR, "saved_model.pkl"))
+        len_image_array = 32*32*3 + 32*32
+        final = combined_img.reshape(1, len_image_array).astype(float)
 
-    print("Artifacts loaded.")
+        prediction = __model.predict(final)[0]
+        probas = __model.predict_proba(final)[0]
 
-# ------------------------------
-# Convert class number to name
-# ------------------------------
+        # map probabilities with correct class index
+        all_probs = {__class_number_to_name[cls]: float(probas[i]) 
+             for i, cls in enumerate(__model.classes_)}
+
+    result.append({
+    'class': class_number_to_name(prediction),
+    'class_probability': np.around(probas*100, 2).tolist(),
+    'probabilities': all_probs,
+    'class_dictionary': __class_name_to_number
+    })
+
+    return result
+
 def class_number_to_name(class_num):
     return __class_number_to_name[class_num]
 
-# ------------------------------
-# Convert base64 string to cv2 image
-# ------------------------------
+def load_saved_artifacts():
+    print("loading saved artifacts...start")
+    global __class_name_to_number
+    global __class_number_to_name
+
+    with open(os.path.join(artifacts_dir, "class_dictionary.json"), "r") as f:
+        __class_name_to_number = json.load(f)
+        __class_number_to_name = {v: k for k, v in __class_name_to_number.items()}
+
+    global __model
+    if __model is None:
+        with open(os.path.join(artifacts_dir, "saved_model.pkl"), 'rb') as f:
+            __model = joblib.load(f)
+    print("loading saved artifacts...done")
+
 def get_cv2_image_from_base64_string(b64str):
     encoded_data = b64str.split(',')[1]
     nparr = np.frombuffer(base64.b64decode(encoded_data), np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     return img
 
-# ------------------------------
-# Crop faces with at least 2 eyes
-# ------------------------------
-def get_cropped_image_if_2_eyes(image_path=None, image_base64_data=None):
+def get_cropped_image_if_2_eyes(image_path, image_base64_data):
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
     eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
 
@@ -70,38 +94,10 @@ def get_cropped_image_if_2_eyes(image_path=None, image_base64_data=None):
             cropped_faces.append(roi_color)
     return cropped_faces
 
-# ------------------------------
-# Classify image
-# ------------------------------
-def classify_image(image_base64_data=None, image_path=None):
-    global __model, __class_number_to_name
-    cropped_faces = get_cropped_image_if_2_eyes(image_path, image_base64_data)
-    results = []
+def get_b64_test_image_for_virat():
+    with open(b64_file) as f:
+        return f.read()
 
-    for img in cropped_faces:
-        # Resize and wavelet
-        scalled_raw_img = cv2.resize(img, (32, 32))
-        img_har = w2d(img, 'haar', 5)
-        scalled_img_har = cv2.resize(img_har, (32, 32))
-
-        # Flatten and combine
-        combined_img = np.hstack((
-            scalled_raw_img.flatten(),
-            scalled_img_har.flatten()
-        ))
-        final_input = combined_img.reshape(1, -1)
-
-        # Predict
-        prediction = __model.predict(final_input)[0]
-        probas = __model.predict_proba(final_input)[0]
-        all_probs = {__class_number_to_name[i]: float(np.round(probas[i], 2)) 
-                     for i in range(len(probas))}
-
-        results.append({
-            'class': class_number_to_name(prediction),
-            'class_probability': np.around(probas*100, 2).tolist(),
-            'probabilities': all_probs,
-            'class_dictionary': __class_name_to_number
-        })
-
-    return results
+if __name__ == '__main__':
+    load_saved_artifacts()
+    print(classify_image(get_b64_test_image_for_virat(), test_image_file))

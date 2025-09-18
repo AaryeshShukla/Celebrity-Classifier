@@ -9,7 +9,7 @@ from wavelets import w2d   # keep your own import
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 artifacts_dir = os.path.join(BASE_DIR, "artifacts")
 b64_file = os.path.join(BASE_DIR, "b64.txt")
-test_image_file = os.path.join(BASE_DIR, "052_89d1073b.jpg")
+test_image_file = os.path.join(BASE_DIR, "test.webp")
 
 __class_name_to_number = {}
 __class_number_to_name = {}
@@ -94,10 +94,10 @@ def get_cropped_image_if_2_eyes(image_path, image_base64_data):
             cropped_faces.append(roi_color)
     return cropped_faces
 
-def get_b64_test_image_for_virat():
+def get_b64_test_image_for_test():
     with open(b64_file) as f:
         return f.read()
 
 if __name__ == '__main__':
     load_saved_artifacts()
-    print(classify_image(get_b64_test_image_for_virat(), test_image_file))
+    print(classify_image(get_b64_test_image_for_test(), test_image_file))
