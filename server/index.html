@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Celebrity Classifier</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #1f1c2c, #928dab);
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      font-weight: 700;
+      margin-bottom: 30px;
+    }
+    .upload-section {
+      background: #2a2a40;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0px 6px 20px rgba(0,0,0,0.4);
+      margin-bottom: 50px;
+    }
+    .btn-custom {
+      background: #ff416c;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 25px;
+      font-weight: 600;
+      transition: all 0.3s ease-in-out;
+    }
+    .btn-custom:hover {
+      background: #ff4b2b;
+      transform: scale(1.05);
+    }
+    #result {
+      font-size: 1.3rem;
+      margin-top: 20px;
+      font-weight: 500;
+    }
+    .celebs-container {
+      margin-top: 50px;
+    }
+    .celebs-container h2 {
+      font-weight: 600;
+      margin-bottom: 30px;
+    }
+    .celeb-list {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .celeb-card {
+      background: #fff;
+      color: #333;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+      transition: transform 0.2s ease-in-out;
+      width: 180px;
+    }
+    .celeb-card:hover {
+      transform: scale(1.07);
+    }
+    .celeb-card img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+  margin: 0 auto;
+}
+    .celeb-card p {
+      margin-top: 10px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <h1>Celebrity Classifier 🔥</h1>
+  
+  <div class="upload-section">
+    <input type="file" id="imageUpload" class="form-control mb-3">
+    <button class="btn btn-custom" onclick="uploadImage()">Classify Image</button>
+    <div id="result"></div>
+  </div>
+
+  <div class="celebs-container">
+    <h2>Supported Celebrities</h2>
+    <div class="celeb-list">
+      <div class="celeb-card">
+        <img src="images/messi.jpg" alt="Lionel Messi">
+        <p>Lionel Messi</p>
+      </div>
+      <div class="celeb-card">
+        <img src="images/brad.jpg" alt="Brad Pitt">
+        <p>Brad Pitt</p>
+      </div>
+      <div class="celeb-card">
+        <img src="images/angelina.jpg" alt="Angelina Jolie">
+        <p>Angelina Jolie</p>
+      </div>
+      <div class="celeb-card">
+        <img src="images/jennifer.jpg" alt="Jennifer Lawrence">
+        <p>Jennifer Lawrence</p>
+      </div>
+      <div class="celeb-card">
+        <img src="images/scarlett.jpg" alt="Scarlett Johansson">
+        <p>Scarlett Johansson</p>
+      </div>
+      <div class="celeb-card">
+        <img src="images/sydney.png" alt="Sydney Sweeney">
+        <p>Sydney Sweeney</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
