@@ -1,0 +1,12 @@
+.git
+.venv
+venv
+__pycache__
+*.pyc
+model
+UI
+Test image
+server/__pycache__
+server/b64.txt
+server/test.webp
+server/util_test.py

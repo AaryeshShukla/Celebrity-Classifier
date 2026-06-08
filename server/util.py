@@ -17,6 +17,9 @@ __class_number_to_name = {}
 __model = None
 
 def classify_image(image_base64_data, file_path=None):
+    if __model is None:
+        load_saved_artifacts()
+
     imgs = get_cropped_image_if_2_eyes(file_path, image_base64_data)
     result = []
 
@@ -37,15 +40,15 @@ def classify_image(image_base64_data, file_path=None):
         probas = __model.predict_proba(final)[0]
 
         # map probabilities with correct class index
-        all_probs = {__class_number_to_name[cls]: float(probas[i]) 
+        all_probs = {__class_number_to_name[int(cls)]: float(probas[i]) 
              for i, cls in enumerate(__model.classes_)}
 
-    result.append({
-    'class': class_number_to_name(prediction),
-    'class_probability': np.around(probas*100, 2).tolist(),
-    'probabilities': all_probs,
-    'class_dictionary': __class_name_to_number
-    })
+        result.append({
+            'class': class_number_to_name(prediction),
+            'class_probability': np.around(probas*100, 2).tolist(),
+            'probabilities': all_probs,
+            'class_dictionary': __class_name_to_number
+        })
 
     return result
 
